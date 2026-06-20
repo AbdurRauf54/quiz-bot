@@ -8,7 +8,7 @@ from telegram.ext import (
 from questions import QUESTIONS
 
 load_dotenv()
-TOKEN = os.getenv("TOKEN")
+TOKEN = os.getenv("8836481742:AAFnvJFLGrI6neUB3CfLY22EKubN3BhvQH4")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
