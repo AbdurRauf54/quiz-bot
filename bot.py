@@ -8,23 +8,32 @@ from telegram.ext import (
 from questions import QUESTIONS
 
 load_dotenv()
-TOKEN = os.getenv("TOKEN")
+TOKEN = os.getenv("8836481742:AAFnvJFLGrI6neUB3CfLY22EKubN3BhvQH4")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🎮 *Welcome to Quiz Bot!*\n\nYou will get 5 questions.\nEach correct answer = 1 point ✅\n\nType /quiz to start!",
+        "🎮 *Welcome to Quiz Bot!*\n\n"
+        "You will get 5 questions.\n"
+        "Each correct answer = 1 point ✅\n\n"
+        "Type /quiz to start!",
         parse_mode="Markdown"
     )
 
 async def send_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     index = context.user_data.get("q_index", 0)
+
     if index >= len(QUESTIONS):
         await show_result(update, context)
         return
+
     q = QUESTIONS[index]
-    keyboard = [[InlineKeyboardButton(opt, callback_data=opt)] for opt in q["options"]]
+    keyboard = [
+        [InlineKeyboardButton(opt, callback_data=opt)]
+        for opt in q["options"]
+    ]
     markup = InlineKeyboardMarkup(keyboard)
     text = f"❓ *Question {index + 1}/{len(QUESTIONS)}*\n\n{q['question']}"
+
     if update.message:
         await update.message.reply_text(text, reply_markup=markup, parse_mode="Markdown")
     else:
@@ -33,32 +42,44 @@ async def send_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+
     index = context.user_data.get("q_index", 0)
     q = QUESTIONS[index]
     selected = query.data
     correct = q["answer"]
+
     if selected == correct:
         context.user_data["score"] = context.user_data.get("score", 0) + 1
         feedback = f"✅ *Correct!* Well done!\n\nAnswer: *{correct}*"
     else:
         feedback = f"❌ *Wrong!*\n\nYour answer: {selected}\nCorrect answer: *{correct}*"
+
     await query.edit_message_text(
         f"❓ *Question {index + 1}/{len(QUESTIONS)}*\n\n{q['question']}\n\n{feedback}",
         parse_mode="Markdown"
     )
+
     context.user_data["q_index"] = index + 1
     await send_question(update, context)
 
 async def show_result(update: Update, context: ContextTypes.DEFAULT_TYPE):
     score = context.user_data.get("score", 0)
     total = len(QUESTIONS)
+
     if score == total:
         emoji = "🏆 Perfect Score!"
     elif score >= total // 2:
         emoji = "👍 Good Job!"
     else:
         emoji = "😅 Keep Practicing!"
-    text = f"🎉 *Quiz Finished!*\n\nYour Score: *{score}/{total}*\n\n{emoji}\n\nType /quiz to play again!"
+
+    text = (
+        f"🎉 *Quiz Finished!*\n\n"
+        f"Your Score: *{score}/{total}*\n\n"
+        f"{emoji}\n\n"
+        f"Type /quiz to play again!"
+    )
+
     if update.callback_query:
         await update.callback_query.message.reply_text(text, parse_mode="Markdown")
     else:
